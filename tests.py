@@ -17,14 +17,14 @@ for alpha0 in [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1., 2.]:
     phi1 = generate_phi(w,t,beta,seed=seed)
     theta1 = generate_theta(d,t,alpha,seed=seed)
 
-    n_iter = 100
+    n_iter = 200
     params = {
         'alpha': alpha,
         'beta': beta,
     }
 
     print "Alpha0:", alpha0
-    for algorithm in ['lda']:
+    for algorithm in ['adaptive_lda', 'lda']:
         phi, theta = nmf(collection, t, phi1, theta1, algorithm=algorithm, n_iter=n_iter, params=params, verbose=False)
 
         print "Algorithm:", algorithm
