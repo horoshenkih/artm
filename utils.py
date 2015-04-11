@@ -10,7 +10,8 @@ def generate_theta(d, t, alpha, seed=42):
 
 def generate_nd(d,seed=42):
     np.random.seed(seed)
-    return np.random.randint(600, 1000, d)
+    return np.random.randint(120, 200, d)
+    #return np.random.randint(600, 1000, d)
 
 def generate_all(w,d,t,alpha,beta,seed=42):
     theta = generate_theta(d,t,alpha,seed)
@@ -28,4 +29,4 @@ def dist(A,B):
     X = np.sqrt(0.5 * X)
     m = X.shape[1]
     X = np.sum(X, axis=1)
-    return X[0,0]
+    return X[0,0] / m
