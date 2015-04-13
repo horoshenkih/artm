@@ -10,7 +10,7 @@ beta0 = 0.1  # const
 n_iter = 200
 
 results = open("results", "w")
-for run in range(2):
+for run in range(5):
     seeds = [30+run,40+run]
     #for alpha0 in [0.5, 1.]:
     for alpha0 in [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.]:
