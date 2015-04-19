@@ -2,18 +2,20 @@ from utils import *
 from algorithms import nmf
 import numpy as np
 
+import sys
+
 w = 200
 d = 100
 t = 6
 
-beta0 = 0.1  # const
-n_iter = 200
+beta0 = 0.01  # const
+n_iter = 300
 
-results = open("results", "w")
-for run in range(5):
+results = open(sys.argv[1], "w")
+for run in range(1):
     seeds = [30+run,40+run]
-    #for alpha0 in [0.5, 1.]:
-    for alpha0 in [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.]:
+    for alpha0 in [0.01, 0.02, 0.05]:
+    #for alpha0 in [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.2,1.4, 1.6, 1.8, 2.]:
         alpha = np.ones((1,t)).ravel() * alpha0
         beta = np.ones((1,w)).ravel() * beta0
 
