@@ -1,22 +1,21 @@
 % problem parameters
 T = 10; W = T; D = T; F = eye(T);
 
-n_runs = 100
-errors = [];
+n_runs = 100;
+n_errors = 0;
+
+initial_seed = 42;
 for run=1:n_runs
     % prepare RNG
-    rand('seed',run)
+    rand('seed', initial_seed + run)
 
     % prepare matrices
-    Phi = rand(T); Phi = Phi ./ sum(Phi);
-    Theta = rand(T); Phi = Phi ./ sum(Phi);
+    Phi = rand(T); Phi = Phi ./ repmat(sum(Phi), W, 1);
+    Theta = rand(T); Theta = Theta ./ repmat(sum(Theta), T, 1);
     %Theta = ones(T) ./ T;
 
-    %printf('Initial matrices:\n')
-    %Phi
-    %Theta
     % run algorithm (Frey's code)
-    for i=1:10
+    for i=1:50
         Z = F ./ (Phi * Theta); Z(F==0) = 0; % this line is correct but really slow
         Phi_tmp = Phi .* (Z * Theta');
         Theta_tmp = Theta .* (Phi' * Z);    
@@ -24,18 +23,13 @@ for run=1:n_runs
         Theta = Theta_tmp ./ repmat(sum(Theta_tmp), T, 1);
     end
 
-    % plot results (rounding issues in Octave)
-    Phi = round(Phi*100) ./ 100;
-    Theta = round(Theta*100) ./ 100;
+    product = Phi * Theta;
 
-    product = round(Phi * Theta * 100) ./ 100;
+    if or(product != F, 
+        !check_permutation_matrix(Phi),
+        !check_permutation_matrix(Theta))
 
-    %printf('Resulting matrices:\n')
-    %Phi
-    %Theta
-    %printf('Error:\n')
-    %product - F
-    errors = [errors norm(product - F, 1)];
+        n_errors += 1;
+    end
 end
-idx = find(errors > 0);
-printf('Correct decomposition in %f %% cases\n', 100 * (1 - columns(idx) / n_runs));
+printf('Correct decomposition in %.2f %% cases\n', 100 * (1 - n_errors / n_runs));
