@@ -2,19 +2,16 @@
 T = 10; W = T; D = T; F = eye(T);
 
 % prepare runs
-rand('seed', 42);
+rand('seed', 421);
 n_runs = 100;
-n_errors = 0;
 
-noise_decay = 5;
-
-add_f_noise = 0;
-add_phi_noise = 0;
-
-add_decorr = 1;
+add_decorr = 0;
 verbose = 0;
 
+n_errors = 0;
 for run=1:n_runs
+    noise_decay = 5;
+
     % prepare matrices
     Phi = rand(T); Phi = Phi ./ repmat(sum(Phi), W, 1);
     %Phi = ones(T) ./ T;
@@ -22,42 +19,36 @@ for run=1:n_runs
     %Theta = ones(T) ./ T;
 
     % run algorithm (Frey's code)
-    for i=1:25
-        F_tmp = F;
-        if add_f_noise
-            % TODO randomizing zeroes seems to be bad idea
-            % randomize diagonal elements
-            noise_matrix = diag(2*(rand(T,1)-0.5) ./ noise_decay);
-            %noise_matrix = diag(1 + poissrnd(0,T,1));
-            F_tmp += noise_matrix;
-            noise_decay += 10;
-        end
+    is_converged = 0;
+    n_iterations = 0;
+    while !is_converged
+        n_iterations += 1;
+
+        % save matrices from previous step
+        Phi_prev = Phi;
+        Theta_prev = Theta;
+
         % do EM
-        Z = F_tmp ./ (Phi * Theta); Z(F_tmp==0) = 0; % this line is correct but really slow
-        if add_phi_noise
-            noise_matrix = 2 * (rand(T) - 0.5) / noise_decay;
-            %nonzero = Phi > 0;
-            Phi += noise_matrix;% .* nonzero;
-            noise_decay += 10;
-        end
+        Z = F./ (Phi * Theta); Z(F==0) = 0; % this line is correct but really slow
         Phi_tmp = Phi .* (Z * Theta');
         if add_decorr
             % ramdomized decorrelator
             tau = 0.5;
             decorrelator = Phi_tmp .* (Phi_tmp * (F == 0));
-            if i < 10
-                % at first, add decreasing noise
-                noise = rand(T) .* (decorrelator > 0) / noise_decay;
-                %noise = rand(T) / noise_decay;
-                noise_decay += 5;
-                decorrelator = decorrelator + noise;
-            end
+            noise = (rand(T)-0.5) .* (decorrelator > 0) / noise_decay;
+            noise_decay += 5;
+            
             Phi_tmp -= tau * decorrelator;
             Phi_tmp(Phi_tmp < 0) = 0;
         end
         Theta_tmp = Theta .* (Phi' * Z);    
         Phi = Phi_tmp ./ repmat(sum(Phi_tmp), W, 1);
         Theta = Theta_tmp ./ repmat(sum(Theta_tmp), T, 1);
+
+        % check if algorithm converged
+        if and(Phi_prev == Phi, Theta_prev == Theta)
+            is_converged = 1;
+        end
     end
 
     % check if decomposition is correct
